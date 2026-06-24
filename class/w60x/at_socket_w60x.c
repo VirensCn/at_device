@@ -173,7 +173,7 @@ static int w60x_socket_send(struct at_socket *socket, const char *buff, size_t b
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
     struct at_device_w60x *w60x = (struct at_device_w60x *) device->user_data;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
 
     RT_ASSERT(buff);
     RT_ASSERT(bfsz > 0);
@@ -298,7 +298,7 @@ static int w60x_domain_resolve(const char *name, char ip[16])
             continue;
         }
 
-        sscanf(pos, "+OK=\"%[^\"]\"", recv_ip);
+        rt_sscanf(pos, "+OK=\"%[^\"]\"", recv_ip);
 
         if (rt_strlen(recv_ip) < 8)
         {
@@ -377,7 +377,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
 
     /* get the at deveice socket and receive buffer size by receive data */
     pos = rt_strstr(data, "+SKTRPT=");
-    sscanf(pos, "+SKTRPT=%d,%d,%[^,],%d", &wsk, (int *) &bfsz, recv_ip, &recv_port);
+    rt_sscanf(pos, "+SKTRPT=%d,%d,%[^,],%d", &wsk, (int *) &bfsz, recv_ip, &recv_port);
 
     for (i = 0; i < AT_DEVICE_W60X_SOCKETS_NUM; i++)
     {

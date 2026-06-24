@@ -315,7 +315,7 @@ static int ec200x_socket_send(struct at_socket *socket, const char *buff, size_t
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
     struct at_device_ec200x *ec200x = (struct at_device_ec200x *) device->user_data;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
 
     RT_ASSERT(buff);
 
@@ -530,7 +530,7 @@ static void urc_connect_func(struct at_client *client, const char *data, rt_size
         return;
     }
 
-    sscanf(data, "+QIOPEN: %d,%d", &device_socket , &result);
+    rt_sscanf(data, "+QIOPEN: %d,%d", &device_socket , &result);
 
     if (result == 0)
     {
@@ -588,7 +588,7 @@ static void urc_close_func(struct at_client *client, const char *data, rt_size_t
         return;
     }
 
-    sscanf(data, "+QIURC: \"closed\",%d", &device_socket);
+    rt_sscanf(data, "+QIURC: \"closed\",%d", &device_socket);
     /* get at socket object by device socket descriptor */
     socket = &(device->sockets[device_socket]);
 
@@ -619,7 +619,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
     }
 
     /* get the current socket and receive buffer size by receive data */
-    sscanf(data, "+QIURC: \"recv\",%d,%d", &device_socket, (int *) &bfsz);
+    rt_sscanf(data, "+QIURC: \"recv\",%d,%d", &device_socket, (int *) &bfsz);
     /* set receive timeout by receive buffer length, not less than 10 ms */
     timeout = bfsz > 10 ? bfsz : 10;
 
@@ -672,7 +672,7 @@ static void urc_pdpdeact_func(struct at_client *client, const char *data, rt_siz
 
     RT_ASSERT(data && size);
 
-    sscanf(data, "+QIURC: \"pdpdeact\",%d", &connectID);
+    rt_sscanf(data, "+QIURC: \"pdpdeact\",%d", &connectID);
 
     LOG_E("context (%d) is deactivated.", connectID);
 }
@@ -710,7 +710,7 @@ static void urc_dnsqip_func(struct at_client *client, const char *data, rt_size_
     /* There would be several dns result, we just pickup one */
     if (j == 3)
     {
-        sscanf(data, "+QIURC: \"dnsgip\",\"%[^\"]", recv_ip);
+        rt_sscanf(data, "+QIURC: \"dnsgip\",\"%[^\"]", recv_ip);
         recv_ip[15] = '\0';
 
         rt_memcpy(ec200x->socket_data, recv_ip, sizeof(recv_ip));
@@ -719,7 +719,7 @@ static void urc_dnsqip_func(struct at_client *client, const char *data, rt_size_
     }
     else
     {
-        sscanf(data, "+QIURC: \"dnsgip\",%d,%d,%d", &result, &ip_count, &dns_ttl);
+        rt_sscanf(data, "+QIURC: \"dnsgip\",%d,%d,%d", &result, &ip_count, &dns_ttl);
         if (result)
         {
             at_tcp_ip_errcode_parse(result);

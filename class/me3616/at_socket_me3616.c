@@ -252,7 +252,7 @@ static int me3616_socket_send(struct at_socket *socket, const char *buff, size_t
     at_response_t resp = RT_NULL;
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
 
     RT_ASSERT(buff);
 
@@ -430,7 +430,7 @@ static void urc_close_func(struct at_client *client, const char *data, rt_size_t
         return;
     }
 
-    sscanf(data, "+ESOERR=%d,%d", &sock, &err_code);
+    rt_sscanf(data, "+ESOERR=%d,%d", &sock, &err_code);
 
     device_socket = me3616_get_socket_idx(sock);
     if (device_socket < 0 || err_code < 0 || err_code > 4)
@@ -468,7 +468,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
         return;
     }
 
-    sscanf(data, "+ESONMI=%d,", &sock);
+    rt_sscanf(data, "+ESONMI=%d,", &sock);
     device_socket = me3616_get_socket_idx(sock);
     if (device_socket < 0)
     {
@@ -490,7 +490,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
         return;
     }
 
-    sscanf(temp, "%d", (int *)&bfsz);
+    rt_sscanf(temp, "%d", (int *)&bfsz);
     if(bfsz == 0)
     {
         return;

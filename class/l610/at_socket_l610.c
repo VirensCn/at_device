@@ -255,7 +255,7 @@ static int l610_socket_send(struct at_socket *socket, const char *buff, size_t b
     at_response_t resp = RT_NULL;
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
     int sock = -1;
 
        sock=l610_socket_fd[device_socket];
@@ -453,7 +453,7 @@ static void urc_send_func(struct at_client *client, const char *data, rt_size_t 
     }
 
     /* get the current socket by receive data */
-    sscanf(data, "+MIPPUSH: %d,%d", &device_socket,&result);
+    rt_sscanf(data, "+MIPPUSH: %d,%d", &device_socket,&result);
 
 
     if (rt_strstr(data, "+MIPPUSH: ")){
@@ -485,7 +485,7 @@ static void urc_close_func(struct at_client *client, const char *data, rt_size_t
         return;
     }
     /* get the current socket by receive data */
-    sscanf(data, "+MIPCLOSE: %d,%d", &device_socket,&result);
+    rt_sscanf(data, "+MIPCLOSE: %d,%d", &device_socket,&result);
 
     if(result==0)
     {
@@ -525,7 +525,7 @@ static void urc_recv_cmd(struct at_client *client, const char *data, rt_size_t s
         return;
     }
 
-    sscanf(data,"+MIPREAD: %d,%d", &sock, (int *) &bfsz);
+    rt_sscanf(data,"+MIPREAD: %d,%d", &sock, (int *) &bfsz);
 
     if(bfsz>0)
     {
@@ -554,7 +554,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
 
 
     /* get the current socket and receive buffer size by receive data */
-    sscanf(data,"+MIPDATA: %d,%d", &sock, (int *) &bfsz);
+    rt_sscanf(data,"+MIPDATA: %d,%d", &sock, (int *) &bfsz);
 
     device_socket = l610_get_socket_idx(sock);
 

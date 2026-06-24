@@ -26,6 +26,10 @@ extern "C" {
 #include <netdev.h>
 #endif /* RT_USING_NETDEV */
 
+#if RT_VER_NUM < 0x50200
+#define rt_sscanf   sscanf
+#endif
+
 #define AT_DEVICE_SW_VERSION           "2.1.0"
 #define AT_DEVICE_SW_VERSION_NUM       0x20100
 
@@ -67,7 +71,7 @@ extern "C" {
 #define AT_DEVICE_CTRL_GET_SIGNAL      0x0AL
 #define AT_DEVICE_CTRL_GET_GPS         0x0BL
 #define AT_DEVICE_CTRL_GET_VER         0x0CL
-
+#define AT_DEVICE_CTRL_SET_HOST_NAME   0x0DL
 /* Name type */
 #define AT_DEVICE_NAMETYPE_DEVICE      0x01
 #define AT_DEVICE_NAMETYPE_NETDEV      0x02
@@ -124,6 +128,8 @@ struct at_device *at_device_get_by_name(int type, const char *name);
 struct at_device *at_device_get_by_socket(int at_socket);
 #endif
 
+/* Get the client lock (mutex) of the specified AT device. */
+rt_mutex_t at_device_get_client_lock(struct at_device *device);
 /* AT device control operaions */
 int at_device_control(struct at_device *device, int cmd, void *arg);
 /* Register AT device class object */

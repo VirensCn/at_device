@@ -212,7 +212,7 @@ static int n720_socket_send(struct at_socket *socket, const char *buff, size_t b
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
     struct at_device_n720 *n720 = (struct at_device_n720 *) device->user_data;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
 
     RT_ASSERT(buff);
 
@@ -389,7 +389,7 @@ static void urc_close_func(struct at_client *client, const char *data, rt_size_t
         return;
     }
 
-    sscanf(data, "$MYURCCLOSE: %d", &device_socket);
+    rt_sscanf(data, "$MYURCCLOSE: %d", &device_socket);
     /* get at socket object by device socket descriptor */
     socket = &(device->sockets[device_socket]);
 
@@ -429,7 +429,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
         return;
     }
 
-    if (sscanf(data, "$MYURCREAD: %d", &device_socket) <= 0)
+    if (rt_sscanf(data, "$MYURCREAD: %d", &device_socket) <= 0)
     {
         return;
     }
@@ -457,7 +457,7 @@ static void read_ack_func(struct at_client *client, const char *data, rt_size_t 
     }
 
     /* get the current socket and receive buffer size by receive data */
-    sscanf(data, "$MYNETREAD: %d,%d", &device_socket, &bfsz);
+    rt_sscanf(data, "$MYNETREAD: %d,%d", &device_socket, &bfsz);
     /* set receive timeout by receive buffer length, not less than 10 ms */
     timeout = bfsz > 10 ? bfsz : 10;
 

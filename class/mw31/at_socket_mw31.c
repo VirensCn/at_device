@@ -189,7 +189,7 @@ static int mw31_socket_send(struct at_socket *socket, const char *buff, size_t b
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
     struct at_device_mw31 *mw31 = (struct at_device_mw31 *) device->user_data;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
     char send_buf[20] = {0};
 
     RT_ASSERT(buff);
@@ -379,7 +379,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
 
     at_client_obj_recv(client, temp, 2, 1000);
     /* get the at deveice socket and receive buffer size by receive data */
-    sscanf(temp, "%d,", &device_socket);
+    rt_sscanf(temp, "%d,", &device_socket);
     temp[0] = 0;
     temp[1] = 0;
     for (i = 0; i < 6; i++)
@@ -390,7 +390,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
         }
         at_client_obj_recv(client, &temp[i], 1, 1000);
     }
-    sscanf(temp, "%ld,", &bfsz);
+    rt_sscanf(temp, "%ld,", &bfsz);
 
     LOG_D("socket:%d, size:%ld\n", device_socket, bfsz);
     /* set receive timeout by receive buffer length, not less than 10 ms */

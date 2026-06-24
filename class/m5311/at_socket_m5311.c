@@ -304,7 +304,7 @@ static int m5311_socket_send(struct at_socket *socket, const char *buff,
     at_response_t resp = RT_NULL;
     int device_socket = (int) socket->user_data;
     struct at_device *device = (struct at_device *) socket->device;
-    rt_mutex_t lock = device->client->lock;
+    rt_mutex_t lock = at_device_get_client_lock(device);
 
     RT_ASSERT(buff);
 
@@ -525,7 +525,7 @@ static void urc_send_func(struct at_client *client, const char *data, rt_size_t 
         return;
     }
 
-    sscanf(data, "+IPSEND: %d,%d", &device_socket, &data_size);
+    rt_sscanf(data, "+IPSEND: %d,%d", &device_socket, &data_size);
 
     if (data_size > 0)
     {
@@ -553,7 +553,7 @@ static void urc_close_func(struct at_client *client, const char *data, rt_size_t
         return;
     }
 
-    sscanf(data, "+IPCLOSE: %d", &device_socket);
+    rt_sscanf(data, "+IPCLOSE: %d", &device_socket);
     socket = &(device->sockets[device_socket]);
 
     if (at_evt_cb_set[AT_SOCKET_EVT_CLOSED])
@@ -588,7 +588,7 @@ static void urc_recv_func(struct at_client *client, const char *data, rt_size_t 
 
     /* get the current socket and receive buffer size by receive data */
     /* mode 2 => +IPRD: <socket>,<remote_addr>, <remote_port>,<length>,<data> */
-    sscanf(data, "+IPRD: %d,\"%[0-9.]\",%d,%d,%s", &device_socket, remote_addr, &remote_port, (int *) &bfsz, hex_buf);
+    rt_sscanf(data, "+IPRD: %d,\"%[0-9.]\",%d,%d,%s", &device_socket, remote_addr, &remote_port, (int *) &bfsz, hex_buf);
 
     /* set receive timeout by receive buffer length, not less than 10 ms */
     timeout = bfsz > 10 ? bfsz : 10;
